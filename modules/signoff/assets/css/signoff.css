@@ -1,0 +1,68 @@
+/* ───────────────────────────────────────────────────────────────────────────
+     Attendance Style
+   ─────────────────────────────────────────────────────────────────────────── */
+   
+.attendance-grid th,
+.attendance-grid td {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 0.25rem;
+}
+
+.attendance-grid input {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px;
+  width: 2.5rem;
+  margin: auto;
+  text-align: center;
+  line-height: 1;
+}
+
+.attendance-status-box {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 10px;
+  text-align: center;
+  line-height: 1.5rem;
+  border-radius: 3px;
+  color: #333;
+}
+
+.status-P  { background-color: #e8f5e9; color: #009688;}   /* Present */
+.status-L  { background-color: #fff3e0; color: #ef6c00;}   /* Casual Leave */
+.status-M  { background-color: #cce5ff; color: #0a58ca;}   /* Medical Leave */
+.status-S  { background-color: #c071c829; color: #673ab7;}   /* Short Leave */
+.status-H  { background-color: #d18c5329; color: #d37983;}   /* US Holiday */
+.status-E  { background-color: #8bc34a5c; color: #52722c;}   /* Eid Holiday */
+.status-A  { background-color: #ffcaca; color: #f44336;}   /* Absent */
+.status-NA { background-color: #f8f9fa;}   /* N/A/default */
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Weekend Columns: unique background for Saturday & Sunday
+   ─────────────────────────────────────────────────────────────────────────── */
+.attendance-grid th.weekend {
+  background-color: #f0f0f0;   /* light gray for weekend headers */
+}
+
+.attendance-grid td.weekend {
+  background-color: #fafafa;   /* off-white for weekend cells */
+}
+
+.attendance-grid td.weekend .attendance-status-box {
+  background-color: #e2e3e5;   /* subtle gray inside weekend status box */
+  border-radius: 3px;
+}
+ 
+.attendance-scroll-arrows {
+  position: relative;
+  margin-bottom: -30px;
+  z-index: 1;
+}
+@media (max-width: 767px) {
+  .attendance-scroll-arrows {
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+}

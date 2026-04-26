@@ -1,0 +1,317 @@
+/* ================================
+   ALERT SYSTEM – MODERN PROFESSIONAL UI
+   Light theme with subtle elegance
+================================ */
+
+.alert-system {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+  width: min(400px, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  pointer-events: none;
+}
+
+/* Base Alert */
+.alert {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-weight: 500;
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.03);
+  
+  opacity: 0;
+  transform: translateX(120%);
+  transition: 
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease,
+    box-shadow 0.2s ease;
+  
+  pointer-events: auto;
+  will-change: transform, opacity;
+}
+
+.alert:hover {
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* Content Area */
+.alert__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert__message {
+  margin: 0;
+  word-break: break-word;
+  letter-spacing: -0.01em;
+}
+
+/* Icon Container - Add via JavaScript or inline */
+.alert__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.alert__icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Close Button */
+.alert__close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #6c757d;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin: -0.25rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert__close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #495057;
+}
+
+.alert__close:active {
+  transform: scale(0.95);
+}
+
+/* Visible State */
+.alert.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ================================
+   SEVERITY STYLES – LIGHT & PROFESSIONAL
+================================ */
+
+/* Success - Green theme */
+.alert--success {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+  border-left: 4px solid #22c55e;
+}
+
+.alert--success .alert__icon svg {
+  color: #22c55e;
+  fill: #22c55e;
+}
+
+.alert--success .alert__message {
+  color: #166534;
+}
+
+/* Error / Danger - Red theme */
+.alert--error,
+.alert--danger {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.alert--error .alert__icon svg,
+.alert--danger .alert__icon svg {
+  color: #ef4444;
+  fill: #ef4444;
+}
+
+.alert--error .alert__message,
+.alert--danger .alert__message {
+  color: #991b1b;
+}
+
+/* Warning - Amber theme */
+.alert--warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-left: 4px solid #f59e0b;
+}
+
+.alert--warning .alert__icon svg {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+.alert--warning .alert__message {
+  color: #92400e;
+}
+
+/* Info - Blue theme */
+.alert--info {
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.alert--info .alert__icon svg {
+  color: #3b82f6;
+  fill: #3b82f6;
+}
+
+.alert--info .alert__message {
+  color: #1e40af;
+}
+
+/* Neutral/Default - Gray theme */
+.alert--neutral {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  border-left: 4px solid #6b7280;
+}
+
+.alert--neutral .alert__message {
+  color: #1f2937;
+}
+
+/* ================================
+   ANIMATIONS & INTERACTIONS
+================================ */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+}
+
+.alert {
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.alert.dismissing {
+  animation: slideOut 0.3s ease forwards;
+}
+
+/* Focus states for accessibility */
+.alert:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.alert__close:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+================================ */
+
+@media (max-width: 640px) {
+  .alert-system {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    width: auto;
+  }
+  
+  .alert {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .alert__close {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ================================
+   REDUCED MOTION
+================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .alert,
+  .alert.dismissing {
+    animation: none;
+    transition: none;
+  }
+  
+  .alert {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .alert.dismissing {
+    display: none;
+  }
+}
+
+/* ================================
+   UTILITY CLASSES
+================================ */
+
+.alert-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.alert-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 0 3px;
+  transition: width 0.1s linear;
+}
+
+.alert--success .alert-progress {
+  background: #22c55e;
+}
+
+.alert--error .alert-progress,
+.alert--danger .alert-progress {
+  background: #ef4444;
+}
+
+.alert--warning .alert-progress {
+  background: #f59e0b;
+}
+
+.alert--info .alert-progress {
+  background: #3b82f6;
+}

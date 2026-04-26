@@ -1,0 +1,161 @@
+# Dashboard Overhaul — Integration Guide
+
+## File placement
+
+```
+application/
+├── controllers/
+│   └── Dashboard.php                          ← replace existing
+├── models/
+│   └── Dashboard_model.php                    ← replace existing
+└── views/
+    ├── dashboard/
+    │   ├── index.php                           ← replace existing (staff)
+    │   ├── admin_index.php                     ← NEW (admin/superadmin)
+    │   └── widgets/
+    │       ├── hr_kpi_strip.php                ← replace existing
+    │       ├── staff_kpi_strip.php             ← NEW
+    │       ├── headcount_widget.php            ← replace existing
+    │       ├── dept_chart_widget.php           ← NEW
+    │       ├── ticket_chart_widget.php         ← NEW
+    │       │
+    │       │   (keep your existing widgets unchanged):
+    │       ├── calendar_widget.php
+    │       ├── announcements_widget.php
+    │       ├── birthdays_widget.php
+    │       ├── todo_widget.php
+    │       ├── team_widget.php
+    │       └── my_open_tickets.php
+    └── layouts/
+        └── master.php                          ← no changes needed
+
+assets/
+├── css/
+│   └── dashboard.css                          ← NEW, include in master layout
+├── js/
+│   └── dashboard.js                           ← NEW, include in master layout
+└── vendor/
+    └── sortablejs/
+        └── Sortable.min.js                    ← NEW dependency (see below)
+```
+
+---
+
+## New dependency: SortableJS
+
+Download or install SortableJS for drag-and-drop:
+
+```bash
+# Option A — npm
+npm install sortablejs
+cp node_modules/sortablejs/Sortable.min.js assets/vendor/sortablejs/
+
+# Option B — CDN (add to master layout)
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+```
+
+---
+
+## Database migration
+
+Run once:
+
+```bash
+mysql -u <user> -p <database> < application/sql/dashboard_schema.sql
+```
+
+---
+
+## Widget view convention
+
+Every widget view **must** stamp these attributes on its outermost element so
+`dashboard.js` can discover it:
+
+```php
+<div class="card border-0 shadow-sm"
+     data-widget-id="<?= Dashboard_model::generate_widget_id('my_widget', 'row3-col-1') ?>"
+     data-container-id="row3-col-1"
+     data-widget-label="My Widget">
+    <!-- widget content -->
+</div>
+```
+
+The `render_dashboard_widgets()` helper (your existing `dashboard_helper.php`)
+should forward these attributes when it renders each widget. If you don't control
+that helper, add the attributes manually inside each widget view file — wrap the
+entire card output in a `<div data-widget-id="...">`.
+
+---
+
+## render_dashboard_widgets() signature change
+
+The staff/admin views now pass a second argument (the container's saved prefs):
+
+```php
+render_dashboard_widgets($id, $widget_prefs[$id] ?? []);
+```
+
+Update your helper to accept and apply this:
+
+```php
+function render_dashboard_widgets(string $container_id, array $prefs = []): void {
+    // existing registry lookup …
+    $order      = $prefs['order']      ?? [];
+    $visibility = $prefs['visibility'] ?? [];
+
+    // sort by saved order if present
+    if ($order) {
+        usort($widgets, function ($a, $b) use ($order) {
+            $ia = array_search($a['id'], $order);
+            $ib = array_search($b['id'], $order);
+            $ia = $ia === false ? PHP_INT_MAX : $ia;
+            $ib = $ib === false ? PHP_INT_MAX : $ib;
+            return $ia <=> $ib;
+        });
+    }
+
+    foreach ($widgets as $w) {
+        $visible = $visibility[$w['id']] ?? true;
+        // still render (JS toggles display); hidden widgets load but are invisible
+        CI::instance()->load->view($w['view']);
+    }
+}
+```
+
+---
+
+## KPI query table assumptions
+
+`Dashboard_model::get_admin_kpis()` queries these tables. Adjust names to match
+your schema:
+
+| Method variable     | Table assumed        | Column checked       |
+|---------------------|----------------------|----------------------|
+| headcount           | `users`              | `status = 'active'`  |
+| new_hires           | `users`              | `created_at >= month_start` |
+| open_tickets        | `support_tickets`    | `status IN (open, in_progress)` |
+| resolved_tickets    | `support_tickets`    | `status = 'resolved'` |
+| pending_leaves      | `leave_requests`     | `status = 'pending'` |
+| attendance_today    | `attendance`         | `DATE(check_in) = today` |
+| dept breakdown      | `users`              | `department` (GROUP BY) |
+
+For staff KPIs, tasks are queried from a `tasks` table with `assigned_to` and
+`due_date` columns. Adjust if your schema differs.
+
+---
+
+## What changed vs. original
+
+| Area                    | Before                                      | After                                          |
+|-------------------------|---------------------------------------------|------------------------------------------------|
+| Role routing            | Both roles render same view                 | Separate `index.php` / `admin_index.php`       |
+| Widget prefs table      | Stub model (no real DB)                     | `dashboard_widget_prefs` with JSON columns     |
+| Drag-and-drop           | None                                        | SortableJS, persisted to DB                    |
+| Visibility toggle       | Partial `save_visibility()`, no UI          | Manage panel + toggle pill UI + AJAX           |
+| KPI data                | Hardcoded/missing                           | `get_admin_kpis()` + `get_staff_kpis()`        |
+| KPI charts              | Only ApexCharts wired up loosely            | Dept donut + Ticket area + Headcount sparkline |
+| KPI refresh             | None                                        | Manual button + 5-min auto-poll                |
+| JS                      | None                                        | `dashboard.js` (~200 lines, no framework)      |
+| CSS                     | None                                        | `dashboard.css` (drag states, KPI cards, dark) |
+| `toggle_widget()`       | Missing                                     | New AJAX endpoint                              |
+| `_json_ok/_json_error`  | Inline repeated code                        | DRY private helpers                            |

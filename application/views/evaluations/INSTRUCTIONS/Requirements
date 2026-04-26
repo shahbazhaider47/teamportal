@@ -1,0 +1,14 @@
+See the all 4 excel files, these are employee evaluation forms for multiple types of evaluation. 
+
+I would like to create this feature in my application where I can manage the employee evaluation more perfectly and in advance ways where I can create new evaluation form which can be used for employee evalution with type of evalutation. The evalutaion will be monthly, bi-annual and annual etc. Review all these files and let me know what tables we should create for evaluation. 
+
+In my application I have the below files: 
+application/controllers/evaluations/Evaluations.php
+application/models/evaluations/Evaluations_model.php
+application/helpers/evaluations_helper.php
+application/views/evaluations/index.php
+
+
+Rest files we need to create in the folder: application/views/evaluations/ (Like: modals, forms, templats, create form, edit evaluation, view evaluation etc)
+
+Please Note: Before working on the files, we need to first finalize the tables we need to create. I would like to use the less tables with advance headers so ne future strugling. 

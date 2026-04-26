@@ -1,0 +1,47 @@
+/* CNIC Mask Styling */
+
+input[data-mask="cnic"] {
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Optional visual cue when invalid but required */
+input[data-mask="cnic"]:required:invalid {
+    border-color: #dc3545;
+}
+
+input[data-mask="cnic"]:required:valid {
+    border-color: #198754;
+}
+
+
+/* Phone mask appearance */
+input[data-mask="phone"]{
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+/* Make the small code dropdown look compact */
+.phone-country-code{
+  font-size: 0.85rem;
+}
+
+/* Clear visual feedback (optional but useful) */
+input[data-mask="phone"]:required:invalid{
+  border-color: #dc3545;
+}
+input[data-mask="phone"]:required:valid{
+  border-color: #198754;
+}
+
+/* Passport number styling */
+input.passport-mask {
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.05em;
+}
+
+input[data-mask="iban"] {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+}

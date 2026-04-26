@@ -1,0 +1,131 @@
+Table 1: eval_templates
+The reusable "form definition" — one row per department+review_type combination.
+sqlCREATE TABLE eval_templates (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name            VARCHAR(150)  NOT NULL,               -- "AR Monthly Evaluation"
+    department      VARCHAR(100)  NOT NULL,               -- "AR", "Charges", "Payments", "Denials & Rejections"
+    review_type     ENUM('monthly','bi-annual','annual','quarterly','probation','custom') NOT NULL DEFAULT 'monthly',
+    description     TEXT          NULL,
+    is_active       TINYINT(1)    NOT NULL DEFAULT 1,
+    created_by      INT UNSIGNED  NOT NULL,
+    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+Table 2: eval_sections
+Each template has ordered sections (Attendance, Work Targets, Performance Ratings, etc). Sections are reusable across templates.
+sqlCREATE TABLE eval_sections (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    template_id     INT UNSIGNED  NOT NULL,
+    section_key     VARCHAR(80)   NOT NULL,   -- 'attendance', 'work_targets', 'perf_metrics', 'ratings', 'phone_usage', 'goals', 'verdict'
+    section_label   VARCHAR(150)  NOT NULL,   -- "Attendance & Punctuality"
+    sort_order      TINYINT       NOT NULL DEFAULT 0,
+    is_active       TINYINT(1)    NOT NULL DEFAULT 1,
+    FOREIGN KEY (template_id) REFERENCES eval_templates(id) ON DELETE CASCADE
+);
+
+Table 3: eval_criteria
+Every individual question/criterion inside a section. This single table covers all 3 question types from your forms using criteria_type.
+sqlCREATE TABLE eval_criteria (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    section_id      INT UNSIGNED  NOT NULL,
+    criteria_type   ENUM('rating','pass_fail','target','attendance','phone','text') NOT NULL,
+    -- 'rating'     = 1-5 score (Performance Ratings section)
+    -- 'pass_fail'  = Pass/Fail/N/A (Individual Performance Metrics)
+    -- 'target'     = work target row (target/day, target/month, actual, ach%)
+    -- 'attendance' = attendance criteria (Poor/Fair/Satisfactory/Good/Excellent)
+    -- 'phone'      = phone usage criteria (Always/>Average/Average/Normal/Rarely)
+    -- 'text'       = free text (goals, comments, verdict)
+    label           VARCHAR(255)  NOT NULL,   -- "Job Knowledge", "AR Follow-up / day"
+    sub_group       VARCHAR(100)  NULL,       -- "Denials", "Rejections" (for Denials dept sub-groups)
+    default_target_day   DECIMAL(10,2) NULL,  -- pre-filled target/day from template
+    default_target_month DECIMAL(10,2) NULL,  -- pre-filled target/month from template
+    default_deadline     VARCHAR(50)   NULL,  -- "5", "25 ERAs" etc
+    note            VARCHAR(255)  NULL,       -- "For Team Leads only"
+    sort_order      SMALLINT      NOT NULL DEFAULT 0,
+    is_active       TINYINT(1)    NOT NULL DEFAULT 1,
+    FOREIGN KEY (section_id) REFERENCES eval_sections(id) ON DELETE CASCADE
+);
+
+Table 4: evaluations
+One row per completed (or in-progress) evaluation for an employee.
+sqlCREATE TABLE evaluations (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    template_id     INT UNSIGNED  NOT NULL,
+    user_id         INT UNSIGNED  NOT NULL,               -- employee being evaluated
+    reviewer_id     INT UNSIGNED  NOT NULL,               -- supervisor doing the evaluation
+    department      VARCHAR(100)  NOT NULL,
+    review_type     ENUM('monthly','bi-annual','annual','quarterly','probation','custom') NOT NULL,
+    review_period   VARCHAR(50)   NOT NULL,               -- "June 2025", "H1 2025"
+    review_date     DATE          NOT NULL,
+    -- Attendance raw data
+    att_working_days   TINYINT    NULL,
+    att_days_present   TINYINT    NULL,
+    att_days_absent    TINYINT    NULL,
+    att_late_arrivals  TINYINT    NULL,
+    att_extra_hours    DECIMAL(5,2) NULL,
+    att_pct            DECIMAL(5,2) NULL,                 -- computed: present/working*100
+    -- Computed scores (stored for fast reporting, recalculated on save)
+    score_attendance   DECIMAL(5,2) NULL,                 -- avg attendance rating
+    score_targets      DECIMAL(5,2) NULL,                 -- avg target achievement %
+    score_perf_metrics VARCHAR(20)  NULL,                 -- "4 / 5" pass count
+    score_ratings      DECIMAL(5,2) NULL,                 -- avg 1–5 rating score
+    -- Summary
+    overall_verdict    VARCHAR(500) NULL,
+    employee_comments  TEXT         NULL,
+    supervisor_comments TEXT        NULL,
+    goals              TEXT         NULL,                 -- JSON array [{goal, training_need}]
+    -- Workflow
+    status          ENUM('draft','submitted','approved','rejected') NOT NULL DEFAULT 'draft',
+    approved_by     INT UNSIGNED  NULL,
+    approved_at     DATETIME      NULL,
+    -- Signatures (store name + date as text; actual wet signatures are out of scope)
+    sig_supervisor  VARCHAR(100)  NULL,
+    sig_supervisor_date DATE       NULL,
+    sig_employee    VARCHAR(100)  NULL,
+    sig_employee_date   DATE      NULL,
+    sig_hr          VARCHAR(100)  NULL,
+    sig_hr_date     DATE          NULL,
+    created_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (template_id) REFERENCES eval_templates(id),
+    INDEX idx_user_review (user_id, review_type, review_date),
+    INDEX idx_department  (department, review_date)
+);
+
+Table 5: eval_responses
+Every scored answer for an evaluation. One row per criterion per evaluation.
+sqlCREATE TABLE eval_responses (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    evaluation_id   INT UNSIGNED  NOT NULL,
+    criteria_id     INT UNSIGNED  NOT NULL,
+    -- For 'rating' type: 1–5
+    score           TINYINT       NULL,
+    -- For 'pass_fail' type: pass/fail/na
+    pass_fail       ENUM('pass','fail','na') NULL,
+    -- For 'target' type:
+    target_day      DECIMAL(10,2) NULL,
+    deadline        VARCHAR(50)   NULL,
+    target_month    DECIMAL(10,2) NULL,
+    actual_month    DECIMAL(10,2) NULL,
+    ach_pct         DECIMAL(7,4)  NULL,    -- computed: actual/target
+    target_pass_fail ENUM('pass','fail') NULL,
+    -- For 'attendance' / 'phone' type: selected option label
+    selected_option VARCHAR(50)   NULL,    -- "Poor","Fair","Satisfactory","Good","Excellent" / "Always","Rarely" etc
+    -- Shared
+    comments        TEXT          NULL,
+    FOREIGN KEY (evaluation_id) REFERENCES evaluations(id) ON DELETE CASCADE,
+    FOREIGN KEY (criteria_id)   REFERENCES eval_criteria(id),
+    UNIQUE KEY uq_eval_criteria (evaluation_id, criteria_id)
+);
+
+Table 6: eval_goals
+Separate table for Goals & Development since there are multiple bullet-point entries per evaluation.
+sqlCREATE TABLE eval_goals (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    evaluation_id   INT UNSIGNED  NOT NULL,
+    goal            TEXT          NULL,     -- "Goals / Action Items" bullet
+    training_need   TEXT          NULL,     -- "Training / Development Needs" bullet
+    sort_order      TINYINT       NOT NULL DEFAULT 0,
+    FOREIGN KEY (evaluation_id) REFERENCES evaluations(id) ON DELETE CASCADE
+);

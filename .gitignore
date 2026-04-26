@@ -1,0 +1,7 @@
+.env
+
+.env
+.DS_Store
+application/ci_sessions/
+application/cache/
+uploads/*

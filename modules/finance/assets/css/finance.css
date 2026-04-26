@@ -1,0 +1,270 @@
+/* wrapper */
+.fin-table {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    overflow: visible; /* IMPORTANT: allow dropdowns */
+    position: relative;
+    padding: 0px 0px 5px 0px;
+}
+
+/* horizontal scroll only */
+.fin-table-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+/* table */
+.fin-table table {
+    width: 100%;
+    min-width: 1100px;
+    border-collapse: collapse;
+}
+
+/* header */
+.fin-table thead th {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #94a3b8;
+    background: #f8fafc;
+    padding: 8px 12px;
+    white-space: nowrap;
+    border-bottom: 2px solid #e2e8f0;
+
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* top-left radius */
+.fin-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+
+/* top-right radius */
+.fin-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+/* body */
+.fin-table tbody td {
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+}
+
+/* hover */
+.fin-table tbody tr:hover td {
+    background: #fafbff;
+}
+
+/* zebra */
+.fin-table tbody tr:nth-child(even) td {
+    background: #fcfdff;
+}
+
+/* compact */
+.fin-table.compact thead th {
+    padding: 6px 10px;
+}
+
+.fin-table.compact tbody td {
+    padding: 6px 10px;
+    font-size: 11px;
+}
+
+/* scrollbar */
+.fin-table-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.fin-table-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* IMPORTANT: dropdown must escape */
+.fin-table .dropdown,
+.fin-table .btn-group {
+    position: static;
+}
+
+.fin-table .dropdown-menu {
+    position: absolute;
+    z-index: 99999;
+}
+
+
+
+
+/* ----------------------------------------- */
+
+.fin-page-header{
+    display: flex;
+    align-items: center;
+    padding: 11px 16px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+}
+
+.fin-page-icon{
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #f0fdfa;
+    color: #056464;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.fin-page-title{
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.fin-page-sub{
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.fin-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+  transition: box-shadow 0.25s;
+}
+
+.fin-kpi-card{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 14px}
+.fin-kpi-icon{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.fin-kpi-value{font-size:18px;font-weight:700;color:#565656;line-height:1}
+.fin-kpi-label{font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.fin-kpi-warn{border-color:#fde68a}
+
+.inv-status-draft          { background: #f8fafc;  border-color: #dbe5ef;  color: #475569; }
+.inv-status-sent           { background: #eff6ff;  border-color: #bfdbfe;  color: #1d4ed8; }
+.inv-status-viewed         { background: #f0f9ff;  border-color: #bae6fd;  color: #0369a1; }
+.inv-status-partial        { background: #fef2f2;  border-color: #fecaca;  color: #b91c1c; }
+.inv-status-paid           { background: #f0fdf4;  border-color: #bbf7d0;  color: #166534; }
+.inv-status-overdue        { background: #fffbeb;  border-color: #fde68a;  color: #92400e; }
+.inv-status-cancelled      { background: #f8fafc;  border-color: #e2e8f0;  color: #94a3b8; }
+
+
+.kpi-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.kpi-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+
+/* ── Row hover action ───────────────────────────── */
+.inv-action-cell { width: 44px; padding: 0 8px !important; }
+
+.inv-action-wrap { opacity: 0; transition: opacity .15s ease; }
+tr:hover .inv-action-wrap { opacity: 1; }
+
+.inv-chevron-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #05646424;
+    border: 1.5px solid #e2e8f0;
+    color: #056464;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .14s;
+    padding: 0;
+}
+.inv-chevron-btn:hover,
+.inv-chevron-btn.show {
+    background: #0a5c52;
+    border-color: #0a5c52;
+    color: #fff;
+}
+
+/* hide the default BS caret */
+.inv-chevron-btn::after { display: none !important; }
+
+/* ── Dropdown menu ──────────────────────────────── */
+.inv-action-menu {
+    min-width: 200px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(13,27,42,.10);
+    padding: 6px;
+    overflow: hidden;
+}
+.inv-action-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 5px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 400;
+    color: #334155;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    transition: background .12s;
+}
+.inv-action-menu .dropdown-item i {
+    font-size: 15px;
+    color: #64748b;
+    flex-shrink: 0;
+}
+.inv-action-menu .dropdown-item:hover {
+    background: #f1f5f9;
+    color: #056464;
+}
+.inv-action-menu .dropdown-item:hover i { color: #0a5c52; }
+
+/* Record Payment — teal highlight */
+.inv-action-menu .inv-action-record-payment {
+    background: #0a5c52;
+    color: #fff;
+    margin-top: 4px;
+}
+.inv-action-menu .inv-action-record-payment i { color: #fff; }
+.inv-action-menu .inv-action-record-payment:hover {
+    background: #0f8a7a;
+    color: #fff;
+}
+
+/* Share link — teal outline */
+.inv-action-menu .inv-action-share {
+    background: #e6f4f1;
+    color: #0a5c52;
+    margin-top: 4px;
+}
+.inv-action-menu .inv-action-share i { color: #0a5c52; }
+.inv-action-menu .inv-action-share:hover { background: #c8e8e3; }
+
+.inv-action-menu .dropdown-item.text-danger i { color: #dc2626; }
+.inv-action-menu .dropdown-item.text-danger:hover { background: #fef2f2; }
+
+.inv-action-menu .dropdown-divider { margin: 4px 0; border-color: #f1f5f9; }

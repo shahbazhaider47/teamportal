@@ -1,0 +1,237 @@
+The Tables we need to create:
+1. fin_invoices 
+2. fin_invoice_items 
+3. fin_credit_notes 
+4. fin_payments 
+5. fin_payment_allocations 
+6. fin_payment_methods (I already have the table: payment_methods, and we will use this table) 
+7. fin_bank_accounts (already created) 
+8. fin_reconciliations 
+9. fin_expenses 
+10. fin_expense_categories 
+11. fin_transactions 
+12. fin_bank_transactions
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+   INSTRUCTIONS
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+💰 Finance Module — Table List, Purpose & Future Mapping
+1. fin_invoices
+
+Purpose:
+Stores invoices generated for clients. Supports contract billing, manual billing, and proposal conversion.
+
+Future Mapping:
+
+client_id → crm_clients.id
+contract_id → crm_contracts.id
+proposal_id → crm_proposals.id
+created_by → users.id
+
+Used With:
+
+fin_invoice_items
+fin_payments
+fin_credit_notes
+2. fin_invoice_items
+
+Purpose:
+Stores line items within invoices (percentage billing, flat fee, setup fee, add-ons).
+
+Future Mapping:
+
+invoice_id → fin_invoices.id
+
+Used For:
+
+Invoice subtotal calculation
+Service breakdown
+3. fin_credit_notes
+
+Purpose:
+Stores credit adjustments applied to invoices (refunds, discounts, write-offs).
+
+Future Mapping:
+
+invoice_id → fin_invoices.id
+client_id → crm_clients.id
+created_by → users.id
+
+Used For:
+
+Reduce invoice balance
+Refund tracking
+4. fin_payments
+
+Purpose:
+Stores incoming payments from clients.
+
+Future Mapping:
+
+client_id → crm_clients.id
+bank_account_id → fin_bank_accounts.id
+payment_method_id → payment_methods.id
+created_by → users.id
+
+Used With:
+
+fin_payment_allocations
+fin_transactions
+5. fin_payment_allocations
+
+Purpose:
+Maps payments to invoices (supports partial and multi-invoice payments).
+
+Future Mapping:
+
+payment_id → fin_payments.id
+invoice_id → fin_invoices.id
+
+Use Case:
+
+One payment → multiple invoices
+One invoice → multiple payments
+6. payment_methods (existing table — will reuse)
+
+Purpose:
+Defines payment types (ACH, Wire, Check, Stripe, etc.)
+
+Used By:
+
+fin_payments
+7. fin_bank_accounts (already created)
+
+Purpose:
+Stores company bank accounts used for receipts, expenses, and reconciliation.
+
+Used By:
+
+fin_payments
+fin_expenses
+fin_transactions
+fin_bank_transactions
+fin_reconciliations
+8. fin_reconciliations
+
+Purpose:
+Tracks bank reconciliation sessions.
+
+Future Mapping:
+
+bank_account_id → fin_bank_accounts.id
+created_by → users.id
+
+Used With:
+
+fin_bank_transactions
+fin_transactions
+9. fin_expenses
+
+Purpose:
+Stores operational expenses (salary, rent, software, contractor payments).
+
+Future Mapping:
+
+category_id → fin_expense_categories.id
+bank_account_id → fin_bank_accounts.id
+created_by → users.id
+
+Used With:
+
+fin_transactions
+10. fin_expense_categories
+
+Purpose:
+Stores expense categories for reporting.
+
+Examples:
+
+Payroll
+Software
+Infrastructure
+Marketing
+Admin
+
+Used By:
+
+fin_expenses
+11. fin_transactions
+
+Purpose:
+Master financial ledger storing all financial movements.
+
+Tracks:
+
+Income
+Expense
+Transfer
+Adjustment
+Refund
+
+Future Mapping:
+
+bank_account_id → fin_bank_accounts.id
+invoice_id → fin_invoices.id
+payment_id → fin_payments.id
+expense_id → fin_expenses.id
+
+Used For:
+
+P&L
+Cash flow
+Financial reporting
+12. fin_bank_transactions
+
+Purpose:
+Stores imported bank statement entries for reconciliation.
+
+Future Mapping:
+
+bank_account_id → fin_bank_accounts.id
+matched_transaction_id → fin_transactions.id
+
+Used With:
+
+fin_reconciliations
+🔗 Overall Relationship Flow
+
+CRM → Invoice → Payment → Ledger → Reconciliation
+
+crm_clients
+     ↓
+fin_invoices
+     ↓
+fin_invoice_items
+     ↓
+fin_payments
+     ↓
+fin_payment_allocations
+     ↓
+fin_transactions
+     ↓
+fin_bank_transactions
+     ↓
+fin_reconciliations
+
+Expenses Flow
+
+fin_expense_categories
+        ↓
+    fin_expenses
+        ↓
+   fin_transactions
+        ↓
+fin_bank_transactions
+🎯 What This Structure Will Support
+
+✅ Client invoicing
+✅ Partial payments
+✅ Credit notes
+✅ Expense tracking
+✅ Bank reconciliation
+✅ Profit & Loss
+✅ Cash flow
+✅ AR aging
+✅ Client profitability
+✅ Audit trail
