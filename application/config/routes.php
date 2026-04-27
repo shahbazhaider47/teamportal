@@ -325,10 +325,41 @@ $route['evaluations/criteria_update/(:num)']       = 'evaluations/Evaluations/cr
 $route['evaluations/criteria_delete/(:num)']       = 'evaluations/Evaluations/criteria_delete/$1';
 
 
-// In config/routes.php
-$route['team_chat/api/(:any)/(:any)/(:any)'] = 'team_chat/api/$1/$2/$3';
-$route['team_chat/api/(:any)/(:any)']        = 'team_chat/api/$1/$2';
-$route['team_chat/api/(:any)']               = 'team_chat/api/$1';
+// -- Team Chat --
+$route['team_chat']                              = 'team_chat/index';
+$route['team_chat/conversation/(:num)']          = 'team_chat/conversation/$1';
+$route['team_chat/users/search']                 = 'team_chat/users_search';
+$route['team_chat/users/online']                 = 'team_chat/users_online';
+$route['team_chat/conversations']                = 'team_chat/conversations_list';
+$route['team_chat/conversations/(:num)']         = 'team_chat/conversation_detail/$1';
+$route['team_chat/conversation/create_direct']   = 'team_chat/conversation_create_direct';
+$route['team_chat/conversation/create_group']    = 'team_chat/conversation_create_group';
+$route['team_chat/conversation/create_channel']  = 'team_chat/conversation_create_channel';
+$route['team_chat/conversation/update/(:num)']   = 'team_chat/conversation_update/$1';
+$route['team_chat/conversation/archive/(:num)']  = 'team_chat/conversation_archive/$1';
+$route['team_chat/members/(:num)']               = 'team_chat/members_list/$1';
+$route['team_chat/members/add']                  = 'team_chat/members_add';
+$route['team_chat/members/remove']               = 'team_chat/members_remove';
+$route['team_chat/members/update_role']          = 'team_chat/members_update_role';
+$route['team_chat/members/mute']                 = 'team_chat/members_mute';
+$route['team_chat/messages/(:num)']              = 'team_chat/messages_list/$1';
+$route['team_chat/messages/send']                = 'team_chat/messages_send';
+$route['team_chat/messages/edit/(:num)']         = 'team_chat/messages_edit/$1';
+$route['team_chat/messages/delete/(:num)']       = 'team_chat/messages_delete/$1';
+$route['team_chat/messages/thread/(:num)']       = 'team_chat/messages_thread/$1';
+$route['team_chat/messages/mark_read']           = 'team_chat/messages_mark_read';
+$route['team_chat/messages/search']              = 'team_chat/messages_search';
+$route['team_chat/reactions/toggle']             = 'team_chat/reactions_toggle';
+$route['team_chat/reactions/(:num)']             = 'team_chat/reactions_list/$1';
+$route['team_chat/pins/add']                     = 'team_chat/pins_add';
+$route['team_chat/pins/remove']                  = 'team_chat/pins_remove';
+$route['team_chat/pins/(:num)']                  = 'team_chat/pins_list/$1';
+$route['team_chat/upload']                       = 'team_chat/upload_file';
+$route['team_chat/upload/attach']                = 'team_chat/upload_attach';
+$route['team_chat/attachment/delete']            = 'team_chat/attachment_delete';
+$route['team_chat/unread']                       = 'team_chat/unread_counts';
+$route['team_chat/unread_counts']                = 'team_chat/unread_counts';
+$route['team_chat/typing']                       = 'team_chat/typing';
 
 /*
 | -------------------------------------------------------------------------

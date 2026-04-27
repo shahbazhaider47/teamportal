@@ -64,20 +64,7 @@ class Team_chat extends App_Controller
     {
         add_module_assets($this->active_module, [
             'css' => ['team_chat.css'],
-            'js'  => [
-                'modules/team_chat_socket.js',
-                'modules/team_chat_conversations.js',
-                'modules/team_chat_messages.js',
-                'modules/team_chat_threads.js',
-                'modules/team_chat_input.js',
-                'modules/team_chat_upload.js',
-                'modules/team_chat_mentions.js',
-                'modules/team_chat_reactions.js',
-                'modules/team_chat_search.js',
-                'modules/team_chat_members.js',
-                'modules/team_chat_notifications.js',
-                'team_chat_init.js',
-            ],
+            'js'  => ['team_chat.js'],
         ]);
 
         $this->load->view('layouts/master', [
@@ -104,8 +91,8 @@ class Team_chat extends App_Controller
             'userFullname'         => htmlspecialchars(team_chat_user_display_name($user ?? []), ENT_QUOTES),
             'userAvatar'           => team_chat_user_avatar_url($user['profile_image'] ?? null),
             'activeConversationId' => (int)$active_conversation_id,
-            'baseUrl'              => site_url('team_chat/api'),
-            'uploadUrl'            => site_url('team_chat/api/upload'),
+            'baseUrl'              => site_url('team_chat'),
+            'uploadUrl'            => site_url('team_chat/upload'),
             'socketUrl'            => defined('TEAM_CHAT_SOCKET_URL') ? TEAM_CHAT_SOCKET_URL : '',
             'moduleUrl'            => defined('TEAM_CHAT_MODULE_URL') ? TEAM_CHAT_MODULE_URL : '',
             'csrfTokenName'        => $this->security->get_csrf_token_name(),
@@ -199,120 +186,37 @@ class Team_chat extends App_Controller
         $this->_render($data['title'], 'team_chat/settings', $data);
     }
 
-    // =========================================================
-    // API METHODS (formerly Team_chat_api)
-    // All endpoints now accessible via /team_chat/api/{method}
-    // =========================================================
-
-    /**
-     * API router - routes /team_chat/api/{method} calls
-     * This method serves as a dispatcher for all API requests
-     */
-    public function api($method = null, $param1 = null, $param2 = null)
-    {
-        if (!module_is_active(TEAM_CHAT_MODULE_NAME)) {
-            $this->_json_error('Module inactive', 403);
-        }
-
-        switch ($method) {
-            case 'conversations':
-                $this->_api_conversations();
-                break;
-
-            case 'conversation':
-                switch ($param1) {
-                    case 'create_direct':  $this->_api_create_direct(); break;
-                    case 'create_group':   $this->_api_create_group(); break;
-                    case 'create_channel': $this->_api_create_channel(); break;
-                    case 'update':         $this->_api_update_conversation($param2); break;
-                    case 'archive':        $this->_api_archive_conversation($param2); break;
-                    default:               $this->_api_conversation($param1); break;
-                }
-                break;
-
-            case 'members':
-                switch ($param1) {
-                    case 'add':         $this->_api_add_members(); break;
-                    case 'remove':      $this->_api_remove_member(); break;
-                    case 'update_role': $this->_api_update_member_role(); break;
-                    case 'mute':        $this->_api_mute_conversation(); break;
-                    default:            $this->_api_members($param1); break;
-                }
-                break;
-
-            case 'messages':
-                switch ($param1) {
-                    case 'send':      $this->_api_send_message(); break;
-                    case 'edit':      $this->_api_edit_message($param2); break;
-                    case 'delete':    $this->_api_delete_message($param2); break;
-                    case 'thread':    $this->_api_thread($param2); break;
-                    case 'mark_read': $this->_api_mark_read(); break;
-                    case 'search':    $this->_api_search_messages(); break;
-                    default:          $this->_api_messages($param1); break;
-                }
-                break;
-
-            case 'reactions':
-                if ($param1 === 'toggle') {
-                    $this->_api_toggle_reaction();
-                }
-                $this->_api_reactions($param1);
-                break;
-
-            case 'pins':
-                switch ($param1) {
-                    case 'add':    $this->_api_pin_message(); break;
-                    case 'remove': $this->_api_unpin_message(); break;
-                    default:       $this->_api_pinned_messages($param1); break;
-                }
-                break;
-
-            case 'upload':
-                if ($param1 === 'attach') {
-                    $this->_api_attach_upload();
-                }
-                $this->_api_upload();
-                break;
-
-            case 'users':
-                $this->_api_users($param1);
-                break;
-
-            case 'unread':
-            case 'unread_counts':
-                $this->_api_unread_counts();
-                break;
-
-            case 'typing':
-                $this->_api_typing();
-                break;
-
-            // Backward-compatible flat endpoint names.
-            case 'create_direct':        $this->_api_create_direct(); break;
-            case 'create_group':         $this->_api_create_group(); break;
-            case 'create_channel':       $this->_api_create_channel(); break;
-            case 'update_conversation':  $this->_api_update_conversation($param1); break;
-            case 'archive_conversation': $this->_api_archive_conversation($param1); break;
-            case 'add_members':          $this->_api_add_members(); break;
-            case 'remove_member':        $this->_api_remove_member(); break;
-            case 'update_member_role':   $this->_api_update_member_role(); break;
-            case 'mute_conversation':    $this->_api_mute_conversation(); break;
-            case 'send_message':         $this->_api_send_message(); break;
-            case 'edit_message':         $this->_api_edit_message($param1); break;
-            case 'delete_message':       $this->_api_delete_message($param1); break;
-            case 'thread':               $this->_api_thread($param1); break;
-            case 'mark_read':            $this->_api_mark_read(); break;
-            case 'search_messages':      $this->_api_search_messages(); break;
-            case 'toggle_reaction':      $this->_api_toggle_reaction(); break;
-            case 'pin_message':          $this->_api_pin_message(); break;
-            case 'unpin_message':        $this->_api_unpin_message(); break;
-            case 'pinned_messages':      $this->_api_pinned_messages($param1); break;
-            case 'delete_attachment':    $this->_api_delete_attachment(); break;
-
-            default:
-                $this->_json_error('API method not found', 404);
-        }
-    }
+    public function conversations_list() { $this->_api_conversations(); }
+    public function conversation_detail($conversation_id = null) { $this->_api_conversation($conversation_id); }
+    public function conversation_create_direct() { $this->_api_create_direct(); }
+    public function conversation_create_group() { $this->_api_create_group(); }
+    public function conversation_create_channel() { $this->_api_create_channel(); }
+    public function conversation_update($conversation_id = null) { $this->_api_update_conversation($conversation_id); }
+    public function conversation_archive($conversation_id = null) { $this->_api_archive_conversation($conversation_id); }
+    public function members_list($conversation_id = null) { $this->_api_members($conversation_id); }
+    public function members_add() { $this->_api_add_members(); }
+    public function members_remove() { $this->_api_remove_member(); }
+    public function members_update_role() { $this->_api_update_member_role(); }
+    public function members_mute() { $this->_api_mute_conversation(); }
+    public function messages_list($conversation_id = null) { $this->_api_messages($conversation_id); }
+    public function messages_send() { $this->_api_send_message(); }
+    public function messages_edit($message_id = null) { $this->_api_edit_message($message_id); }
+    public function messages_delete($message_id = null) { $this->_api_delete_message($message_id); }
+    public function messages_thread($parent_id = null) { $this->_api_thread($parent_id); }
+    public function messages_mark_read() { $this->_api_mark_read(); }
+    public function messages_search() { $this->_api_search_messages(); }
+    public function reactions_list($message_id = null) { $this->_api_reactions($message_id); }
+    public function reactions_toggle() { $this->_api_toggle_reaction(); }
+    public function pins_list($conversation_id = null) { $this->_api_pinned_messages($conversation_id); }
+    public function pins_add() { $this->_api_pin_message(); }
+    public function pins_remove() { $this->_api_unpin_message(); }
+    public function upload_file() { $this->_api_upload(); }
+    public function upload_attach() { $this->_api_attach_upload(); }
+    public function attachment_delete() { $this->_api_delete_attachment(); }
+    public function users_search() { $this->_api_search_users(); }
+    public function users_online() { $this->_api_online_users(); }
+    public function unread_counts() { $this->_api_unread_counts(); }
+    public function typing() { $this->_api_typing(); }
 
     // =========================================================
     // PRIVATE API HANDLERS
