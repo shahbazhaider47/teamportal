@@ -156,9 +156,7 @@ var TC_Members = (function () {
             var roleBadge  = { owner: 'bg-primary', admin: 'bg-info text-dark', member: 'bg-secondary' };
             var badge      = roleBadge[m.role] || 'bg-secondary';
             var onlineCls  = m.is_online ? 'tc-avatar__status--online' : 'tc-avatar__status--offline';
-            var avatar     = m.profile_image
-                ? '/uploads/staff_profile_images/' + m.profile_image
-                : '';
+            var avatar     = m.avatar_url || '';
 
             return '<div class="tc-member-row" data-user-id="' + m.user_id + '" data-role="' + _esc(m.role) + '">'
                 + '<div class="tc-member-row__avatar">'

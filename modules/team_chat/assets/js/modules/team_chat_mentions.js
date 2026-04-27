@@ -82,9 +82,7 @@ var TC_Mentions = (function () {
                 _activeIndex = 0;
 
                 listEl.innerHTML = _results.map(function (u, i) {
-                    var avatar = u.profile_image
-                        ? '/uploads/staff_profile_images/' + u.profile_image
-                        : '';
+                    var avatar = u.avatar_url || '';
                     return '<div class="tc-mention-item' + (i===0?' is-active':'') + '" data-index="' + i + '" data-username="' + _esc(u.username || u.fullname) + '">'
                         + (avatar ? '<img class="tc-avatar tc-avatar--xs" src="' + avatar + '" alt="">' : '<span class="tc-avatar tc-avatar--xs" style="background:#4f46e5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;">' + _esc((u.fullname||'?')[0]) + '</span>')
                         + '<div><div class="tc-mention-item__name">' + _esc(u.fullname) + '</div>'

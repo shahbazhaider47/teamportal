@@ -294,9 +294,9 @@ var TC_Messages = (function () {
         var isSystem  = msg.type === 'system';
         var isMine    = isMe ? 'tc-bubble--mine' : 'tc-bubble--theirs';
         var time      = _msgTime(msg.created_at || '');
-        var avatar    = msg.sender_avatar
-            ? '/uploads/staff_profile_images/' + msg.sender_avatar
-            : _initialsAvatar(msg.sender_name || '?');
+        var avatar    = msg.sender_avatar_url || (msg.sender_avatar
+            ? '/uploads/users/profile/' + msg.sender_avatar
+            : _initialsAvatar(msg.sender_name || '?'));
 
         if (isSystem) {
             return '<div class="tc-bubble tc-bubble--system" data-msg-id="' + msg.id + '" data-type="system">'

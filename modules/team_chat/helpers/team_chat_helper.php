@@ -69,7 +69,7 @@ if (!function_exists('team_chat_conversation_avatar')) {
             $peer = $conversation['peer'] ?? [];
 
             if (!empty($peer['profile_image'])) {
-                return base_url('uploads/staff_profile_images/' . $peer['profile_image']);
+                return team_chat_user_avatar_url($peer['profile_image']);
             }
 
             return team_chat_initials_avatar(
@@ -86,6 +86,29 @@ if (!function_exists('team_chat_conversation_avatar')) {
             $conversation['name'] ?? '?',
             $module_url
         );
+    }
+}
+
+if (!function_exists('team_chat_user_avatar_url')) {
+    /**
+     * Builds the user avatar URL using the same profile image location used by
+     * the core user/task modules.
+     *
+     * @param  string|null $profile_image
+     * @return string|null
+     */
+    function team_chat_user_avatar_url($profile_image)
+    {
+        $profile_image = trim((string)$profile_image);
+        if ($profile_image === '') {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $profile_image)) {
+            return $profile_image;
+        }
+
+        return base_url('uploads/users/profile/' . ltrim($profile_image, '/'));
     }
 }
 

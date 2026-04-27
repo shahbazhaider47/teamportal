@@ -59,11 +59,8 @@
                         };
                         $online_class = !empty($member['is_online']) ? 'tc-status--online' : 'tc-status--offline';
 
-                        if (!empty($member['profile_image'])) {
-                            $avatar = base_url('uploads/staff_profile_images/' . $member['profile_image']);
-                        } else {
-                            $avatar = team_chat_initials_avatar($member['fullname'] ?? '?');
-                        }
+                        $avatar = team_chat_user_avatar_url($member['profile_image'] ?? null)
+                            ?: team_chat_initials_avatar($member['fullname'] ?? '?');
                     ?>
                     <div class="tc-member-row"
                          data-user-id="<?php echo (int)$member['user_id']; ?>"
@@ -224,7 +221,7 @@
             resultsEl.innerHTML = res.data.map(u => `
                 <div class="tc-user-result" data-user-id="${u.id}" data-name="${_esc(u.fullname)}">
                     <img class="tc-avatar tc-avatar--sm"
-                         src="${u.profile_image ? '/uploads/staff_profile_images/'+u.profile_image : ''}"
+                         src="${u.avatar_url || ''}"
                          alt="" onerror="this.style.display='none'">
                     <div>
                         <div class="tc-user-result__name">${_esc(u.fullname)}</div>

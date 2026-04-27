@@ -260,9 +260,9 @@
                 return `<div class="tc-user-result ${already}" data-user-id="${u.id}"
                              data-name="${_esc(u.fullname)}" 
                              data-emp-id="${_esc(u.emp_id || '')}"
-                             data-avatar="${_esc(u.profile_image || '')}">
+                             data-avatar-url="${_esc(u.avatar_url || '')}">
                     <img class="tc-avatar--sm"
-                         src="${u.profile_image ? (baseUrl.replace('/team_chat','') + '/uploads/staff_profile_images/' + u.profile_image) : ''}"
+                         src="${_esc(u.avatar_url || '')}"
                          alt="" 
                          onerror="this.style.display='none'">
                     <div>
@@ -283,7 +283,7 @@
                             id: uid, 
                             fullname: this.dataset.name, 
                             emp_id: this.dataset.empId,
-                            profile_image: this.dataset.avatar 
+                            avatar_url: this.dataset.avatarUrl
                         };
                     }
                     _renderChips();
