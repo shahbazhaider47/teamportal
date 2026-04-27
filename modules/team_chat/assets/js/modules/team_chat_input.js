@@ -83,14 +83,7 @@ var TC_Input = (function () {
             if (pendingFiles.length) {
                 TC_Upload.uploadAll(_convId)
                     .then(function (attachmentIds) {
-                        TC_Messages.send(body).then(function (res) {
-                            if (res && res.success && res.data) {
-                                // Attach uploaded files to the message
-                                attachmentIds.forEach(function (aid) {
-                                    TC_Upload.attachToMessage(aid, res.data.id);
-                                });
-                            }
-                        });
+                        TC_Messages.send(body, null, attachmentIds);
                     });
             } else {
                 TC_Messages.send(body);

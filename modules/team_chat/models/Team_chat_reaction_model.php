@@ -104,7 +104,7 @@ class Team_chat_reaction_model extends App_Model
     {
         $message_id = (int)$message_id;
         $user_id    = (int)$user_id;
-        $emoji      = mb_substr(trim($emoji), 0, 10); // Guard emoji length
+        $emoji      = trim($emoji);
 
         if ($this->has_reacted($message_id, $user_id, $emoji)) {
             $this->remove($message_id, $user_id, $emoji);
