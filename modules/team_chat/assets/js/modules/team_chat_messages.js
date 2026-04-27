@@ -87,11 +87,12 @@ var TC_Messages = (function () {
     }
 
     /* ── Send ─────────────────────────────────────────────── */
-    function send(body, parentId) {
+    function send(body, parentId, attachmentIds) {
         if (!body || !_convId) return Promise.reject('Invalid');
 
         var data = { conversation_id: _convId, body: body };
         if (parentId) data.parent_id = parentId;
+        if (attachmentIds && attachmentIds.length) data['attachment_ids[]'] = attachmentIds;
 
         return _post('/messages/send', data)
             .then(function (res) {
@@ -327,7 +328,7 @@ var TC_Messages = (function () {
                 + msg.reactions.map(function (r) {
                     var mine = r.reacted_by_me ? 'tc-reaction-pill--mine' : '';
                     return '<button class="tc-reaction-pill ' + mine + '" data-msg-id="' + msg.id + '" data-emoji="' + _esc(r.emoji) + '"'
-                        + ' onclick="TC_Reactions.toggle(' + msg.id + ', \'' + _esc(r.emoji) + '\')">'
+                        + ' title="' + _esc(r.reactor_names || '') + '">'
                         + '<span class="tc-reaction-pill__emoji">' + _esc(r.emoji) + '</span>'
                         + '<span class="tc-reaction-pill__count">' + r.count + '</span></button>';
                 }).join('') + '</div>';

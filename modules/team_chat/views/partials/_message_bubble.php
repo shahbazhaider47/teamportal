@@ -157,8 +157,7 @@ if (!empty($sender_avatar)) {
             <button class="tc-reaction-pill <?php echo $reaction['reacted_by_me'] ? 'tc-reaction-pill--mine' : ''; ?>"
                     data-msg-id="<?php echo $msg_id; ?>"
                     data-emoji="<?php echo htmlspecialchars($reaction['emoji'], ENT_QUOTES); ?>"
-                    title="<?php echo htmlspecialchars($reaction['reactor_names'] ?? '', ENT_QUOTES); ?>"
-                    onclick="TeamChat.toggleReaction(<?php echo $msg_id; ?>, '<?php echo htmlspecialchars($reaction['emoji'], ENT_QUOTES); ?>')">
+                    title="<?php echo htmlspecialchars($reaction['reactor_names'] ?? '', ENT_QUOTES); ?>">
                 <span class="tc-reaction-pill__emoji"><?php echo htmlspecialchars($reaction['emoji'], ENT_QUOTES); ?></span>
                 <span class="tc-reaction-pill__count"><?php echo (int)$reaction['count']; ?></span>
             </button>

@@ -244,6 +244,7 @@ class Team_chat_attachment_model extends App_Model
     public function attach_to_message($attachment_id, $message_id)
     {
         $this->db->where('id', (int)$attachment_id)
+                 ->where('message_id IS NULL', null, false)
                  ->update('chat_attachments', ['message_id' => (int)$message_id]);
 
         return $this->db->affected_rows() > 0;

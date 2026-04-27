@@ -290,6 +290,7 @@ if (!$db->table_exists('chat_attachments')) {
             'type'     => 'BIGINT',
             'constraint' => 20,
             'unsigned' => true,
+            'null'     => true,
         ],
         'conversation_id' => [
             'type'     => 'BIGINT',
@@ -349,6 +350,14 @@ if (!$db->table_exists('chat_attachments')) {
     $forge->create_table('chat_attachments', true, ['ENGINE' => 'InnoDB', 'DEFAULT CHARSET' => 'utf8mb4', 'COLLATE' => 'utf8mb4_unicode_ci']);
 
     log_message('debug', '✅ chat_attachments table created.');
+} else {
+    $field = $db->field_data('chat_attachments');
+    foreach ($field as $column) {
+        if ($column->name === 'message_id' && empty($column->nullable)) {
+            $db->query('ALTER TABLE `chat_attachments` MODIFY `message_id` BIGINT(20) UNSIGNED NULL');
+            break;
+        }
+    }
 }
 
 // ─────────────────────────────────────────────────────────────

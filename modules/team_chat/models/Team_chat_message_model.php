@@ -194,6 +194,7 @@ class Team_chat_message_model extends App_Model
         $this->db->join('users u',  'u.id = cm.sender_id', 'left');
         $this->db->join('users pu', 'pu.id = p.pinned_by', 'left');
         $this->db->where('p.conversation_id', $conversation_id);
+        $this->db->where('cm.conversation_id', $conversation_id);
         $this->db->where('cm.is_deleted', 0);
         $this->db->order_by('p.pinned_at', 'DESC');
 

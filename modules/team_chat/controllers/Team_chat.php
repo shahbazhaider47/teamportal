@@ -197,121 +197,105 @@ class Team_chat extends App_Controller
      */
     public function api($method = null, $param1 = null, $param2 = null)
     {
-        // Check if module is active
         if (!module_is_active(TEAM_CHAT_MODULE_NAME)) {
             $this->_json_error('Module inactive', 403);
         }
 
-        // Map the method to the appropriate private handler
         switch ($method) {
-            // Conversations
             case 'conversations':
                 $this->_api_conversations();
                 break;
+
             case 'conversation':
-                $this->_api_conversation($param1);
+                switch ($param1) {
+                    case 'create_direct':  $this->_api_create_direct(); break;
+                    case 'create_group':   $this->_api_create_group(); break;
+                    case 'create_channel': $this->_api_create_channel(); break;
+                    case 'update':         $this->_api_update_conversation($param2); break;
+                    case 'archive':        $this->_api_archive_conversation($param2); break;
+                    default:               $this->_api_conversation($param1); break;
+                }
                 break;
-            case 'create_direct':
-                $this->_api_create_direct();
-                break;
-            case 'create_group':
-                $this->_api_create_group();
-                break;
-            case 'create_channel':
-                $this->_api_create_channel();
-                break;
-            case 'update_conversation':
-                $this->_api_update_conversation($param1);
-                break;
-            case 'archive_conversation':
-                $this->_api_archive_conversation($param1);
-                break;
-            
-            // Members
+
             case 'members':
-                $this->_api_members($param1);
+                switch ($param1) {
+                    case 'add':         $this->_api_add_members(); break;
+                    case 'remove':      $this->_api_remove_member(); break;
+                    case 'update_role': $this->_api_update_member_role(); break;
+                    case 'mute':        $this->_api_mute_conversation(); break;
+                    default:            $this->_api_members($param1); break;
+                }
                 break;
-            case 'add_members':
-                $this->_api_add_members();
-                break;
-            case 'remove_member':
-                $this->_api_remove_member();
-                break;
-            case 'update_member_role':
-                $this->_api_update_member_role();
-                break;
-            case 'mute_conversation':
-                $this->_api_mute_conversation();
-                break;
-            
-            // Messages
+
             case 'messages':
-                $this->_api_messages($param1);
+                switch ($param1) {
+                    case 'send':      $this->_api_send_message(); break;
+                    case 'edit':      $this->_api_edit_message($param2); break;
+                    case 'delete':    $this->_api_delete_message($param2); break;
+                    case 'thread':    $this->_api_thread($param2); break;
+                    case 'mark_read': $this->_api_mark_read(); break;
+                    case 'search':    $this->_api_search_messages(); break;
+                    default:          $this->_api_messages($param1); break;
+                }
                 break;
-            case 'send_message':
-                $this->_api_send_message();
-                break;
-            case 'edit_message':
-                $this->_api_edit_message($param1);
-                break;
-            case 'delete_message':
-                $this->_api_delete_message($param1);
-                break;
-            case 'thread':
-                $this->_api_thread($param1);
-                break;
-            case 'mark_read':
-                $this->_api_mark_read();
-                break;
-            case 'search_messages':
-                $this->_api_search_messages();
-                break;
-            
-            // Reactions
-            case 'toggle_reaction':
-                $this->_api_toggle_reaction();
-                break;
+
             case 'reactions':
+                if ($param1 === 'toggle') {
+                    $this->_api_toggle_reaction();
+                }
                 $this->_api_reactions($param1);
                 break;
-            
-            // Pins
-            case 'pin_message':
-                $this->_api_pin_message();
+
+            case 'pins':
+                switch ($param1) {
+                    case 'add':    $this->_api_pin_message(); break;
+                    case 'remove': $this->_api_unpin_message(); break;
+                    default:       $this->_api_pinned_messages($param1); break;
+                }
                 break;
-            case 'unpin_message':
-                $this->_api_unpin_message();
-                break;
-            case 'pinned_messages':
-                $this->_api_pinned_messages($param1);
-                break;
-            
-            // Files
+
             case 'upload':
+                if ($param1 === 'attach') {
+                    $this->_api_attach_upload();
+                }
                 $this->_api_upload();
                 break;
-            case 'delete_attachment':
-                $this->_api_delete_attachment();
-                break;
-            
-            // Users
+
             case 'users':
                 $this->_api_users($param1);
                 break;
-            
-            // Unread
+
             case 'unread':
-                $this->_api_unread_counts();
-                break;
             case 'unread_counts':
                 $this->_api_unread_counts();
                 break;
-            
-            // Typing
+
             case 'typing':
                 $this->_api_typing();
                 break;
-            
+
+            // Backward-compatible flat endpoint names.
+            case 'create_direct':        $this->_api_create_direct(); break;
+            case 'create_group':         $this->_api_create_group(); break;
+            case 'create_channel':       $this->_api_create_channel(); break;
+            case 'update_conversation':  $this->_api_update_conversation($param1); break;
+            case 'archive_conversation': $this->_api_archive_conversation($param1); break;
+            case 'add_members':          $this->_api_add_members(); break;
+            case 'remove_member':        $this->_api_remove_member(); break;
+            case 'update_member_role':   $this->_api_update_member_role(); break;
+            case 'mute_conversation':    $this->_api_mute_conversation(); break;
+            case 'send_message':         $this->_api_send_message(); break;
+            case 'edit_message':         $this->_api_edit_message($param1); break;
+            case 'delete_message':       $this->_api_delete_message($param1); break;
+            case 'thread':               $this->_api_thread($param1); break;
+            case 'mark_read':            $this->_api_mark_read(); break;
+            case 'search_messages':      $this->_api_search_messages(); break;
+            case 'toggle_reaction':      $this->_api_toggle_reaction(); break;
+            case 'pin_message':          $this->_api_pin_message(); break;
+            case 'unpin_message':        $this->_api_unpin_message(); break;
+            case 'pinned_messages':      $this->_api_pinned_messages($param1); break;
+            case 'delete_attachment':    $this->_api_delete_attachment(); break;
+
             default:
                 $this->_json_error('API method not found', 404);
         }
@@ -655,29 +639,69 @@ class Team_chat extends App_Controller
         $body            = trim($this->input->post('body'));
         $parent_id       = (int)$this->input->post('parent_id');
         $user_id         = $this->_user_id();
+        $attachment_ids  = $this->_posted_int_array('attachment_ids');
 
         $this->_require_member($conversation_id, $user_id);
+
+        if ($parent_id) {
+            $parent = $this->db->select('conversation_id')
+                               ->where('id', $parent_id)
+                               ->where('is_deleted', 0)
+                               ->get('chat_messages')
+                               ->row_array();
+
+            if (!$parent || (int)$parent['conversation_id'] !== $conversation_id) {
+                $this->_json_error('Invalid thread parent');
+            }
+        }
 
         $conv = $this->db->select('is_read_only, is_archived')
                          ->where('id', $conversation_id)
                          ->get('chat_conversations')
                          ->row_array();
 
-        if (!$conv)                { $this->_json_error('Conversation not found'); }
-        if ($conv['is_read_only']) { $this->_json_error('This channel is read-only'); }
-        if ($conv['is_archived'])  { $this->_json_error('This conversation is archived'); }
-        if (empty($body))          { $this->_json_error('Message body is required'); }
+        if (!$conv)                          { $this->_json_error('Conversation not found'); }
+        if ($conv['is_read_only'])           { $this->_json_error('This channel is read-only'); }
+        if ($conv['is_archived'])            { $this->_json_error('This conversation is archived'); }
+        if (empty($body) && !$attachment_ids) { $this->_json_error('Message body or attachment is required'); }
+
+        $attachments = [];
+        $message_type = 'text';
+        foreach ($attachment_ids as $attachment_id) {
+            $attachment = $this->Team_chat_attachment_model->get($attachment_id);
+            if (!$attachment
+                || (int)$attachment['conversation_id'] !== $conversation_id
+                || (int)$attachment['uploader_id'] !== $user_id
+                || !empty($attachment['message_id'])) {
+                $this->_json_error('Invalid attachment');
+            }
+            $attachments[] = $attachment;
+        }
+
+        if ($attachments) {
+            $message_type = 'file';
+            foreach ($attachments as $attachment) {
+                if (($attachment['category'] ?? '') === 'image') {
+                    $message_type = 'image';
+                    break;
+                }
+            }
+        }
 
         $message_id = $this->Team_chat_message_model->send_message([
             'conversation_id' => $conversation_id,
             'sender_id'       => $user_id,
             'parent_id'       => $parent_id ?: null,
-            'type'            => 'text',
+            'type'            => $message_type,
             'body'            => $body,
         ]);
 
         if (!$message_id) {
             $this->_json_error('Could not send message');
+        }
+
+        foreach ($attachments as $attachment) {
+            $this->Team_chat_attachment_model->attach_to_message((int)$attachment['id'], $message_id);
         }
 
         $this->Team_chat_notification_model->process_mentions($body, $message_id, $conversation_id, $user_id);
@@ -707,6 +731,8 @@ class Team_chat extends App_Controller
 
         if (!$message) { $this->_json_error('Message not found'); }
 
+        $this->_require_member((int)$message['conversation_id'], $user_id);
+
         if ((int)$message['sender_id'] !== $user_id && !staff_can('delete_message', 'team_chat')) {
             $this->_json_error('Permission denied', 403);
         }
@@ -733,6 +759,8 @@ class Team_chat extends App_Controller
         $message = $this->db->where('id', $message_id)->where('is_deleted', 0)->get('chat_messages')->row_array();
 
         if (!$message) { $this->_json_error('Message not found'); }
+
+        $this->_require_member((int)$message['conversation_id'], $user_id);
 
         if ((int)$message['sender_id'] !== $user_id && !staff_can('delete_message', 'team_chat')) {
             $this->_json_error('Permission denied', 403);
@@ -810,7 +838,9 @@ class Team_chat extends App_Controller
         $emoji      = trim($this->input->post('emoji'));
         $user_id    = $this->_user_id();
 
-        if (!$message_id || empty($emoji)) { $this->_json_error('Invalid request'); }
+        if (!$message_id || !$this->_is_allowed_reaction($emoji)) {
+            $this->_json_error('Invalid reaction');
+        }
 
         $message = $this->db->where('id', $message_id)->where('is_deleted', 0)->get('chat_messages')->row_array();
 
@@ -856,6 +886,17 @@ class Team_chat extends App_Controller
 
         $this->_require_member($conversation_id, $user_id);
         $this->_require_role($conversation_id, $user_id, ['owner', 'admin']);
+
+        $message = $this->db->select('id')
+                            ->where('id', $message_id)
+                            ->where('conversation_id', $conversation_id)
+                            ->where('is_deleted', 0)
+                            ->get('chat_messages')
+                            ->row_array();
+
+        if (!$message) {
+            $this->_json_error('Message not found in this conversation');
+        }
 
         $exists = $this->db->where('message_id', $message_id)
                            ->where('conversation_id', $conversation_id)
@@ -933,6 +974,38 @@ class Team_chat extends App_Controller
         }
 
         $this->_json_success($result['attachment']);
+    }
+
+    private function _api_attach_upload()
+    {
+        $this->_only_post();
+
+        $attachment_id = (int)$this->input->post('attachment_id');
+        $message_id    = (int)$this->input->post('message_id');
+        $user_id       = $this->_user_id();
+
+        $attachment = $this->Team_chat_attachment_model->get($attachment_id);
+        $message    = $this->db->where('id', $message_id)->where('is_deleted', 0)->get('chat_messages')->row_array();
+
+        if (!$attachment || !$message) {
+            $this->_json_error('Attachment or message not found');
+        }
+
+        if ((int)$attachment['uploader_id'] !== $user_id || (int)$message['sender_id'] !== $user_id) {
+            $this->_json_error('Permission denied', 403);
+        }
+
+        if ((int)$attachment['conversation_id'] !== (int)$message['conversation_id']) {
+            $this->_json_error('Attachment does not belong to this conversation');
+        }
+
+        $this->_require_member((int)$message['conversation_id'], $user_id);
+
+        if (!$this->Team_chat_attachment_model->attach_to_message($attachment_id, $message_id)) {
+            $this->_json_error('Could not attach file to message');
+        }
+
+        $this->_json_success($this->Team_chat_attachment_model->get($attachment_id));
     }
 
     private function _api_delete_attachment()
@@ -1071,10 +1144,15 @@ class Team_chat extends App_Controller
     // PRIVATE HELPERS
     // =========================================================
 
+    private function _can_access_conversation($conversation_id, $user_id)
+    {
+        return $this->Team_chat_conversation_model->is_member($conversation_id, $user_id)
+            || staff_can('view_all', 'team_chat');
+    }
+
     private function _require_member($conversation_id, $user_id)
     {
-        if (!$this->Team_chat_conversation_model->is_member($conversation_id, $user_id)
-            && !staff_can('view_all', 'team_chat')) {
+        if (!$this->_can_access_conversation($conversation_id, $user_id)) {
             $this->_json_error('You are not a member of this conversation', 403);
         }
     }
@@ -1095,6 +1173,38 @@ class Team_chat extends App_Controller
         if (!$row || !in_array($row['role'], $roles)) {
             $this->_json_error('Insufficient role for this action', 403);
         }
+    }
+
+    private function _is_allowed_reaction($emoji)
+    {
+        static $allowed = [
+            '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳',
+            '👍','👎','👌','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👋','🤚','🖐️','✋','🖖','💪','🤜','🤛','👊','✊','🙌','👐','🤲','🤝','🙏','💅','🤳',
+            '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','💕','💞','💓','💗','💖','💘','💝','💟','♥️','🫀',
+            '🎉','🎊','🎈','🎀','🎁','🎂','🎆','🎇','🧨','🎏','🎐','🎑','🎃','🎄','🎋','🎍','🎎','🎠','🎡','🎢','🎪','🤹','🎭','🎬','🎤','🎧','🎼','🎹','🎸','🎺',
+            '🚀','✅','❌','⚡','🔥','💡','💰','📌','📎','🔑','🔒','🔓','📱','💻','🖥️','🖨️','⌨️','🖱️','💾','📀','📷','📸','📹','🎥','📡','☎️','📞','📺','📻','⏰','⏱️',
+            '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧','🐦','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝',
+        ];
+
+        return in_array(trim((string)$emoji), $allowed, true);
+    }
+
+    private function _posted_int_array($key)
+    {
+        $values = $this->input->post($key);
+        if ($values === null) {
+            $values = $this->input->post($key . '[]');
+        }
+
+        if ($values === null || $values === '') {
+            return [];
+        }
+
+        if (!is_array($values)) {
+            $values = [$values];
+        }
+
+        return array_values(array_unique(array_filter(array_map('intval', $values))));
     }
 
     private function _json_success($data = [], $message = 'OK')
