@@ -7,9 +7,14 @@ defined('BASEPATH') or exit('No direct script access allowed');
  */
 class Team_chat_conversation_model extends App_Model
 {
+    private $has_is_online;
+    private $has_last_seen_at;
+
     public function __construct()
     {
         parent::__construct();
+        $this->has_is_online   = $this->db->field_exists('is_online', 'users');
+        $this->has_last_seen_at = $this->db->field_exists('last_seen_at', 'users');
     }
 
     // =========================================================
@@ -184,31 +189,41 @@ class Team_chat_conversation_model extends App_Model
      */
     public function get_members($conversation_id)
     {
-        $this->db->select('
+        $select = '
             mem.id AS member_id,
             mem.user_id,
             mem.role,
             mem.is_muted,
             mem.joined_at,
             mem.last_read_at,
-            u.fullname,
+            COALESCE(NULLIF(u.fullname, ""), TRIM(CONCAT(COALESCE(u.firstname, ""), " ", COALESCE(u.lastname, ""))), u.username, u.email) AS fullname,
             u.firstname,
             u.lastname,
             u.profile_image,
             u.emp_id,
             u.emp_department,
-            u.emp_team,
-            u.is_online,
-            u.last_seen_at
-        ');
+            u.emp_team';
+
+        $select .= $this->has_is_online ? ', u.is_online' : ', 0 AS is_online';
+        $select .= $this->has_last_seen_at ? ', u.last_seen_at' : ', NULL AS last_seen_at';
+
+        $this->db->select($select, false);
         $this->db->from('chat_members mem');
         $this->db->join('users u', 'u.id = mem.user_id', 'left');
         $this->db->where('mem.conversation_id', (int)$conversation_id);
         $this->db->where('mem.left_at IS NULL', null, false);
         $this->db->order_by('mem.role', 'ASC');
-        $this->db->order_by('u.fullname', 'ASC');
+        $this->db->order_by('fullname', 'ASC');
 
-        return $this->db->get()->result_array();
+        $members = $this->db->get()->result_array();
+        foreach ($members as &$member) {
+            $member['avatar_url'] = function_exists('team_chat_user_avatar_url')
+                ? team_chat_user_avatar_url($member['profile_image'] ?? null)
+                : null;
+        }
+        unset($member);
+
+        return $members;
     }
 
     // =========================================================
@@ -396,16 +411,18 @@ class Team_chat_conversation_model extends App_Model
      */
     private function _get_direct_peer($conversation_id, $user_id)
     {
-        $this->db->select('
+        $select = '
             u.id,
-            u.fullname,
+            COALESCE(NULLIF(u.fullname, ""), TRIM(CONCAT(COALESCE(u.firstname, ""), " ", COALESCE(u.lastname, ""))), u.username, u.email) AS fullname,
             u.firstname,
             u.lastname,
             u.profile_image,
-            u.emp_id,
-            u.is_online,
-            u.last_seen_at
-        ');
+            u.emp_id';
+
+        $select .= $this->has_is_online ? ', u.is_online' : ', 0 AS is_online';
+        $select .= $this->has_last_seen_at ? ', u.last_seen_at' : ', NULL AS last_seen_at';
+
+        $this->db->select($select, false);
         $this->db->from('chat_members mem');
         $this->db->join('users u', 'u.id = mem.user_id', 'inner');
         $this->db->where('mem.conversation_id', (int)$conversation_id);
@@ -413,7 +430,14 @@ class Team_chat_conversation_model extends App_Model
         $this->db->where('mem.left_at IS NULL', null, false);
         $this->db->limit(1);
 
-        return $this->db->get()->row_array();
+        $peer = $this->db->get()->row_array();
+        if ($peer) {
+            $peer['avatar_url'] = function_exists('team_chat_user_avatar_url')
+                ? team_chat_user_avatar_url($peer['profile_image'] ?? null)
+                : null;
+        }
+
+        return $peer;
     }
 
     /**

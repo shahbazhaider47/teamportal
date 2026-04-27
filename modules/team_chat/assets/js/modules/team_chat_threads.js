@@ -172,9 +172,7 @@ var TC_Threads = (function () {
     function _bubbleHTML(msg, isParent) {
         var isMe  = parseInt(msg.sender_id) === parseInt(_userId);
         var isMine = isMe ? 'tc-bubble--mine' : 'tc-bubble--theirs';
-        var avatar = msg.sender_avatar
-            ? '/uploads/staff_profile_images/' + msg.sender_avatar
-            : _initialsAvatar(msg.sender_name || '?');
+        var avatar = msg.sender_avatar_url || (msg.sender_avatar ? '/uploads/users/profile/' + msg.sender_avatar : _initialsAvatar(msg.sender_name || '?'));
         var time   = _msgTime(msg.created_at || '');
         var body   = _parseBody(msg.body || '');
 

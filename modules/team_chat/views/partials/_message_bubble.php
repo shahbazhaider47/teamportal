@@ -28,11 +28,7 @@ $bubble_class    = $is_mine ? 'tc-bubble--mine' : 'tc-bubble--theirs';
 $system_class    = $type === 'system' ? 'tc-bubble--system' : '';
 
 // Avatar URL
-if (!empty($sender_avatar)) {
-    $avatar_src = base_url('uploads/staff_profile_images/' . $sender_avatar);
-} else {
-    $avatar_src = team_chat_initials_avatar($msg['sender_name'] ?? '?');
-}
+$avatar_src = team_chat_user_avatar_url($sender_avatar, $msg['sender_name'] ?? '?');
 ?>
 
 <?php /* ── System message — minimal centered display ─────── */ ?>

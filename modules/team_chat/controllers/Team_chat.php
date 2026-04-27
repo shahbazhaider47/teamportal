@@ -64,7 +64,20 @@ class Team_chat extends App_Controller
     {
         add_module_assets($this->active_module, [
             'css' => ['team_chat.css'],
-            'js'  => ['team_chat_init.js'],
+            'js'  => [
+                'modules/team_chat_socket.js',
+                'modules/team_chat_conversations.js',
+                'modules/team_chat_messages.js',
+                'modules/team_chat_threads.js',
+                'modules/team_chat_input.js',
+                'modules/team_chat_upload.js',
+                'modules/team_chat_mentions.js',
+                'modules/team_chat_reactions.js',
+                'modules/team_chat_search.js',
+                'modules/team_chat_members.js',
+                'modules/team_chat_notifications.js',
+                'team_chat_init.js',
+            ],
         ]);
 
         $this->load->view('layouts/master', [
@@ -88,8 +101,8 @@ class Team_chat extends App_Controller
 
         return [
             'userId'               => (int)$user_id,
-            'userFullname'         => htmlspecialchars($user['fullname'] ?? '', ENT_QUOTES),
-            'userAvatar'           => $user['profile_image'] ?? '',
+            'userFullname'         => htmlspecialchars(team_chat_user_display_name($user ?? []), ENT_QUOTES),
+            'userAvatar'           => team_chat_user_avatar_url($user['profile_image'] ?? null),
             'activeConversationId' => (int)$active_conversation_id,
             'baseUrl'              => site_url('team_chat/api'),
             'uploadUrl'            => site_url('team_chat/api/upload'),
@@ -1047,31 +1060,15 @@ class Team_chat extends App_Controller
 
         $q       = trim((string)($this->input->get('q') ?? ''));
         $user_id = $this->_user_id();
+        $limit   = min(max((int)($this->input->get('limit') ?: 20), 1), 50);
 
-        if (mb_strlen($q) < 1) {
-            $this->_json_success([]);
-            return;
-        }
+        $users = $this->_search_chat_users($q, $limit);
+        $users = array_values(array_filter($users, function ($user) use ($user_id) {
+            return (int)$user['id'] !== $user_id
+                && strtolower((string)($user['user_role'] ?? '')) !== 'superadmin';
+        }));
 
-        $users = $this->User_model->search_for_dropdown($q, true, 15);
-
-        // Exclude current user
-        $users = array_values(array_filter($users, fn($u) => (int)$u['id'] !== $user_id));
-
-        $base_url = base_url('uploads/staff_profile_images/');
-
-        $result = array_map(fn($u) => [
-            'id'            => (int)$u['id'],
-            'fullname'      => $u['fullname'] ?: trim(($u['firstname'] ?? '') . ' ' . ($u['lastname'] ?? '')),
-            'firstname'     => $u['firstname'] ?? '',
-            'lastname'      => $u['lastname']  ?? '',
-            'username'      => $u['username']  ?? '',
-            'email'         => $u['email']     ?? '',
-            'emp_id'        => $u['emp_id']    ?? '',
-            'user_role'     => $u['user_role'] ?? '',
-            'profile_image' => !empty($u['profile_image']) ? $u['profile_image'] : null,
-            'avatar_url'    => !empty($u['profile_image']) ? $base_url . $u['profile_image'] : null,
-        ], $users);
+        $result = array_map([$this, '_normalize_chat_user'], $users);
 
         $this->_json_success(array_values($result));
     }
@@ -1080,12 +1077,23 @@ class Team_chat extends App_Controller
     {
         $this->_only_get();
 
-        $this->_json_success(
-            $this->db->select('id, fullname, last_seen_at')
-                     ->where('is_online', 1)
-                     ->get('users')
-                     ->result_array()
-        );
+        $select = 'id, firstname, lastname, fullname, username, email, emp_id, user_role, profile_image';
+        if ($this->db->field_exists('last_seen_at', 'users')) {
+            $select .= ', last_seen_at';
+        }
+        if ($this->db->field_exists('is_online', 'users')) {
+            $select .= ', is_online';
+            $this->db->where('is_online', 1);
+        }
+
+        $users = $this->db->select($select)
+                          ->from('users')
+                          ->where('is_active', 1)
+                          ->limit(50)
+                          ->get()
+                          ->result_array();
+
+        $this->_json_success(array_map([$this, '_normalize_chat_user'], $users));
     }
 
     // ─────────────────────────────────────────────────────────
@@ -1187,6 +1195,87 @@ class Team_chat extends App_Controller
         ];
 
         return in_array(trim((string)$emoji), $allowed, true);
+    }
+
+    private function _search_chat_users($query, $limit)
+    {
+        $query = trim((string)$query);
+        $limit = min(max((int)$limit, 1), 50);
+
+        if ($query === '') {
+            return method_exists($this->User_model, 'search_for_dropdown')
+                ? $this->User_model->search_for_dropdown(null, true, $limit)
+                : $this->db->select('id, firstname, lastname, fullname, username, email, user_role, is_active, emp_id, profile_image')
+                           ->from('users')
+                           ->where('is_active', 1)
+                           ->order_by('firstname', 'ASC')
+                           ->order_by('lastname', 'ASC')
+                           ->limit($limit)
+                           ->get()
+                           ->result_array();
+        }
+
+        if (method_exists($this->User_model, 'search_for_dropdown')) {
+            return $this->User_model->search_for_dropdown($query, true, $limit);
+        }
+
+        return $this->db->select('id, firstname, lastname, fullname, username, email, user_role, is_active, emp_id, profile_image')
+                        ->from('users')
+                        ->where('is_active', 1)
+                        ->group_start()
+                            ->like('fullname', $query)
+                            ->or_like('firstname', $query)
+                            ->or_like('lastname', $query)
+                            ->or_like('username', $query)
+                            ->or_like('email', $query)
+                            ->or_like('emp_id', $query)
+                        ->group_end()
+                        ->order_by('firstname', 'ASC')
+                        ->order_by('lastname', 'ASC')
+                        ->limit($limit)
+                        ->get()
+                        ->result_array();
+    }
+
+    private function _normalize_chat_user(array $user)
+    {
+        $name = trim((string)($user['fullname'] ?? ''));
+        if ($name === '') {
+            $name = trim(($user['firstname'] ?? '') . ' ' . ($user['lastname'] ?? ''));
+        }
+        if ($name === '') {
+            $name = $user['username'] ?? $user['email'] ?? ('User #' . (int)$user['id']);
+        }
+
+        $profile_image = !empty($user['profile_image']) ? ltrim((string)$user['profile_image'], '/') : null;
+
+        return [
+            'id'            => (int)$user['id'],
+            'fullname'      => $name,
+            'firstname'     => $user['firstname'] ?? '',
+            'lastname'      => $user['lastname']  ?? '',
+            'username'      => $user['username']  ?? '',
+            'email'         => $user['email']     ?? '',
+            'emp_id'        => $user['emp_id']    ?? '',
+            'user_role'     => $user['user_role'] ?? '',
+            'profile_image' => $profile_image,
+            'avatar_url'    => $this->_chat_avatar_url($profile_image),
+            'is_online'     => !empty($user['is_online']),
+            'last_seen_at'  => $user['last_seen_at'] ?? null,
+        ];
+    }
+
+    private function _chat_avatar_url($profile_image)
+    {
+        $profile_image = trim((string)$profile_image);
+        if ($profile_image === '') {
+            return null;
+        }
+        if (preg_match('#^https?://#i', $profile_image)) {
+            return $profile_image;
+        }
+
+        return base_url('uploads/users/profile/' . ltrim($profile_image, '/'));
     }
 
     private function _posted_int_array($key)
